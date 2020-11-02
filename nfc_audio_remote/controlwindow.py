@@ -48,13 +48,13 @@ class ControlWindow(object):
                                           row=3, column=1
                                           )
 
-        self._stopButton = ImageButton(   self.window, text='Stop',
-                                          command = self._buttonCallback__stop,
+        self._pauseButton = ImageButton(   self.window, text='Pause',
+                                          command = self._buttonCallback__pause,
                                           row=1, column=1, image='images/play-50px.png'
                                           )
                                           
         self._backButton = ImageButton(   self.window, text='Back',
-                                          command = self._buttonCallback__back,
+                                          command = self._buttonCallback__previous,
                                           row=1, column=0, image='images/rewind-50px.png'
                                           )
         self._forwardButton = ImageButton(   self.window, text='Fwd',
@@ -67,12 +67,10 @@ class ControlWindow(object):
                       
         self._volumeSlider = tkinter.Scale( self.window,
                                             command = self._scaleCallback__volume,
-                                            to=0, from_=100)
+                                            to=0, from_=100, resolution=5)
         self._volumeSlider.set(75)
         self._volumeSlider.grid(row=1, rowspan=3, column=3)
         self._volumeUpdateJob = None
-
-        #self._layout_widgets()
 
         self._socketSender = SocketSender()
         
@@ -92,21 +90,20 @@ class ControlWindow(object):
     def _buttonCallback__playAlbum(self):
         print('_buttonCallback__playAlbum called')
         albumName = self._albumField.get()
-        self._socketSender.send_play(albumName)
+        self._socketSender.send_start_album(albumName)
         
         
-    
-    def _buttonCallback__stop(self):
-        print('_buttonCallback__stop called')
-        self._socketSender.send_stop()
+    def _buttonCallback__pause(self):
+        print('_buttonCallback__pause called')
+        self._socketSender.send_pause()
         
-    def _buttonCallback__back(self):
-        print('_buttonCallback__back called')
-        pass
+    def _buttonCallback__previous(self):
+        print('_buttonCallback__previous called')
+        self._socketSender.send_previous()
 
     def _buttonCallback__forward(self):
         print('_buttonCallback__forward called')
-        pass
+        self._socketSender.send_forward()
     
     def _scaleCallback__volume(self, volumeValue):
 
