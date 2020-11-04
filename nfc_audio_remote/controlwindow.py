@@ -65,9 +65,10 @@ class ControlWindow(object):
 
         self._volumeLabel.grid(row=0, column=3, padx=(20, 10))
                       
+        # We don't want to go higher than 80 using this interface, since that's real loud
         self._volumeSlider = tkinter.Scale( self.window,
                                             command = self._scaleCallback__volume,
-                                            to=0, from_=100, resolution=5)
+                                            to=0, from_=80, resolution=5)
         self._volumeSlider.set(75)
         self._volumeSlider.grid(row=1, rowspan=3, column=3)
         self._volumeUpdateJob = None
@@ -120,7 +121,7 @@ class ControlWindow(object):
         
         print('_sendVolumeUpdate called with {0}, job {1}'.
                 format(volumeValue, self._volumeUpdateJob))
-        
+        self._socketSender.send_volume_update(volumeValue)
         self._volumeUpdateJob = None
         
         

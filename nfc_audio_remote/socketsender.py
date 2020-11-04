@@ -49,4 +49,10 @@ class SocketSender(object):
         dict_to_send = copy.copy(self._templatePayload)
         dict_to_send['event'] = 'previous'
         self._send_message(dict_to_send)
+
+    def send_volume_update(self, volume):
+        dict_to_send = copy.copy(self._templatePayload)
+        dict_to_send['event'] = 'setVolume'
+        dict_to_send['data'] = {'volume': int(volume)}
+        self._send_message(dict_to_send)
         
