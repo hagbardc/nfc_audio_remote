@@ -32,6 +32,10 @@ class SocketSender(object):
 
         dict_to_send['event'] = 'start'
         albumDict = {'album': album}
+
+        if artist:
+            albumDict['artist'] = artist
+            
         dict_to_send['data'] = albumDict
         self._send_message(dict_to_send)
 

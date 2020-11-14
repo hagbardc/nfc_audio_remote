@@ -36,7 +36,7 @@ class ControlWindow(object):
 
         # Album entry space
         self._albumField = tkinter.Entry(self.window)
-        
+        self._artistField = tkinter.Entry(self.window)
         
         self._infoLabel.grid(row=0)
         
@@ -47,6 +47,9 @@ class ControlWindow(object):
                                           command = self._buttonCallback__playAlbum,
                                           row=3, column=1
                                           )
+
+        self._artistField.grid(row=3, column=2)
+
 
         self._pauseButton = ImageButton(   self.window, text='Pause',
                                           command = self._buttonCallback__pause,
@@ -91,7 +94,11 @@ class ControlWindow(object):
     def _buttonCallback__playAlbum(self):
         print('_buttonCallback__playAlbum called')
         albumName = self._albumField.get()
-        self._socketSender.send_start_album(albumName)
+
+        artistName = self._artistField.get()
+        if not len(artistName):
+            artistName = None
+        self._socketSender.send_start_album(album=albumName, artist=artistName)
         
         
     def _buttonCallback__pause(self):
