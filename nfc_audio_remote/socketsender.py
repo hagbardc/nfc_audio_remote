@@ -3,7 +3,7 @@ import json
 import copy
 
 class SocketSender(object):
-    def __init__(self, host = '192.168.1.253', port = 32413):
+    def __init__(self, host = '192.168.50.253', port = 32413):
         self.host = host
         self.port = port
 
