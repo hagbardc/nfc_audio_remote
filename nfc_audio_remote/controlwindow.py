@@ -1,8 +1,17 @@
 import tkinter
 import tkinter.ttk
 
+
+import json
 import logging
+import re
+
 from socketsender import SocketSender
+from autocomplete import AutocompleteEntry
+
+def _selectionCallback(itemSelected):
+    print('Selection callback: {0}'.format(itemSelected))
+
 
 class ImageButton:
     """button1 = Button("Testo", "4ce", 0, 0)"""
@@ -37,10 +46,28 @@ class ControlWindow(object):
         # Album entry space
         self._albumField = tkinter.Entry(self.window)
         self._artistField = tkinter.Entry(self.window)
+
+        f = open('data/albumlist.json', mode='r')
+        album_json = f.read()
+        f.close()
+        albumlist = json.loads(album_json)
+
+        def matches_internal(fieldValue, acListEntry):
+            pattern = re.compile(re.escape(fieldValue) + '.*', re.IGNORECASE)
+            return re.search(pattern, acListEntry)
         
+        self._autocomplete = AutocompleteEntry(albumlist, 
+                                               self.window, 
+                                               listboxLength=20, 
+                                               width=32, 
+                                               matchesFunction=matches_internal, 
+                                               selectionCallback=_selectionCallback)
+        self._autocomplete.grid(row=3, column=0)
+
         self._infoLabel.grid(row=0)
         
-        self._albumField.grid(row=3, column=0)
+        #self._albumField.grid(row=3, column=0)
+        #self._artistField.grid(row=3, column=2)
 
 
         self._playButton = ImageButton(   self.window, text='Play Album',
@@ -48,7 +75,6 @@ class ControlWindow(object):
                                           row=3, column=1
                                           )
 
-        self._artistField.grid(row=3, column=2)
 
 
         self._pauseButton = ImageButton(   self.window, text='Pause',

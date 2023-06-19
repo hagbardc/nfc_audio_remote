@@ -33,12 +33,28 @@ class AutocompleteEntry(Entry):
                 
             self.matchesFunction = matches
 
+        if 'selectionCallback' in kwargs:
+            self._selectionCallback = kwargs['selectionCallback']
+            del kwargs['selectionCallback']
+        else:
+            self._selectionCallback = None
         
         Entry.__init__(self, *args, **kwargs)
         self.focus()
 
         #self.autocompleteList = [ w["name"] for w in autocompleteList ]
-        self.autocompleteList = autocompleteList
+        # Here, autocompleteList is a list of dict objects {album['artist'], album['album']}
+        # we want to create a lookup table that allows us to get access to each element on a select operation
+
+        aclist = []  # list for the autocomplete entry box
+        self.albumList = {}  # new dict object, { 'artist - album':  {album['artist'], album['album']} }
+        for album in autocompleteList:
+            print('==> {0}'.format(album))
+            lookupStr = '{0} - {1}'.format(album['artist'], album['album'])
+            aclist.append(lookupStr)
+            self.albumList[lookupStr] = album
+
+        self.autocompleteList = aclist
 
         self.var = self["textvariable"]
         if self.var == '':
@@ -76,14 +92,19 @@ class AutocompleteEntry(Entry):
         print(self.listbox.curselection())
 
     def selection(self, event):
-        print("calling selection")
+        chosenString = None
         if self.listboxUp:
-            print("selection: {0}".format(self.listbox.curselection()))
             self.var.set(self.listbox.get(ACTIVE))
-            print(self.var)
+            print('==> {0}'.format(self.listbox.get(ACTIVE)))
+            chosenString = '{0}'.format(self.listbox.get(ACTIVE))
             self.listbox.destroy()
             self.listboxUp = False
             self.icursor(END)
+
+
+        print('chosenString is {0}'.format(chosenString))
+        if chosenString:
+            self._selectionCallback(self.albumList[chosenString])
 
     def moveUp(self, event):
         if self.listboxUp:
@@ -129,7 +150,6 @@ if __name__ == '__main__':
     for album in albumlist:
         aclist.append('{0} - {1}'.format(album['artist'], album['album']))
 
-    
     def matches(fieldValue, acListEntry):
         pattern = re.compile(re.escape(fieldValue) + '.*', re.IGNORECASE)
         return re.match(pattern, acListEntry)
@@ -139,7 +159,7 @@ if __name__ == '__main__':
         return re.search(pattern, acListEntry)
     
     root = Tk()
-    entry = AutocompleteEntry(aclist, root, listboxLength=20, width=32, matchesFunction=matches_internal)
+    entry = AutocompleteEntry(albumlist, root, listboxLength=20, width=32, matchesFunction=matches_internal)
     entry.grid(row=0, column=0)    
     Button(text='Python').grid(column=0)
     Button(text='Tkinter').grid(column=0)
