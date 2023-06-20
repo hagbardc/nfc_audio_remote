@@ -9,8 +9,6 @@ import re
 from socketsender import SocketSender
 from autocomplete import AutocompleteEntry
 
-def _selectionCallback(itemSelected):
-    print('Selection callback: {0}'.format(itemSelected))
 
 
 class ImageButton:
@@ -33,7 +31,8 @@ class ImageButton:
 
 class ControlWindow(object):
 
-    def __init__(self):
+
+    def __init__(self, autocompleteCallback):
         self.window = tkinter.Tk()
         #f1 = tkinter.Frame(self.window, height=50, width=100)
         #f1.pack()
@@ -61,7 +60,7 @@ class ControlWindow(object):
                                                listboxLength=20, 
                                                width=32, 
                                                matchesFunction=matches_internal, 
-                                               selectionCallback=_selectionCallback)
+                                               selectionCallback=autocompleteCallback)
         self._autocomplete.grid(row=3, column=0)
 
         self._infoLabel.grid(row=0)
@@ -105,6 +104,9 @@ class ControlWindow(object):
         self._socketSender = SocketSender()
         
         
+    def playAlbum(self, albumName, artistName=None):
+        self._socketSender.send_start_album(album=albumName, artist=artistName)
+    
     def _layout_widgets(self):
         self._infoLabel.grid(row=0)
         self._albumField.grid(row=0)
@@ -124,7 +126,8 @@ class ControlWindow(object):
         artistName = self._artistField.get()
         if not len(artistName):
             artistName = None
-        self._socketSender.send_start_album(album=albumName, artist=artistName)
+        
+        self.playAlbum(album=albumName, artist=artistName)
         
         
     def _buttonCallback__pause(self):
