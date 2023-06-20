@@ -1,8 +1,15 @@
 import tkinter
 import tkinter.ttk
 
+
+import json
 import logging
+import re
+
 from socketsender import SocketSender
+from autocomplete import AutocompleteEntry
+
+
 
 class ImageButton:
     """button1 = Button("Testo", "4ce", 0, 0)"""
@@ -24,7 +31,8 @@ class ImageButton:
 
 class ControlWindow(object):
 
-    def __init__(self):
+
+    def __init__(self, autocompleteCallback):
         self.window = tkinter.Tk()
         #f1 = tkinter.Frame(self.window, height=50, width=100)
         #f1.pack()
@@ -37,10 +45,28 @@ class ControlWindow(object):
         # Album entry space
         self._albumField = tkinter.Entry(self.window)
         self._artistField = tkinter.Entry(self.window)
+
+        f = open('data/albumlist.json', mode='r')
+        album_json = f.read()
+        f.close()
+        albumlist = json.loads(album_json)
+
+        def matches_internal(fieldValue, acListEntry):
+            pattern = re.compile(re.escape(fieldValue) + '.*', re.IGNORECASE)
+            return re.search(pattern, acListEntry)
         
+        self._autocomplete = AutocompleteEntry(albumlist, 
+                                               self.window, 
+                                               listboxLength=20, 
+                                               width=32, 
+                                               matchesFunction=matches_internal, 
+                                               selectionCallback=autocompleteCallback)
+        self._autocomplete.grid(row=3, column=0)
+
         self._infoLabel.grid(row=0)
         
-        self._albumField.grid(row=3, column=0)
+        #self._albumField.grid(row=3, column=0)
+        #self._artistField.grid(row=3, column=2)
 
 
         self._playButton = ImageButton(   self.window, text='Play Album',
@@ -48,7 +74,6 @@ class ControlWindow(object):
                                           row=3, column=1
                                           )
 
-        self._artistField.grid(row=3, column=2)
 
 
         self._pauseButton = ImageButton(   self.window, text='Pause',
@@ -79,6 +104,9 @@ class ControlWindow(object):
         self._socketSender = SocketSender()
         
         
+    def playAlbum(self, albumName, artistName=None):
+        self._socketSender.send_start_album(album=albumName, artist=artistName)
+    
     def _layout_widgets(self):
         self._infoLabel.grid(row=0)
         self._albumField.grid(row=0)
@@ -98,7 +126,8 @@ class ControlWindow(object):
         artistName = self._artistField.get()
         if not len(artistName):
             artistName = None
-        self._socketSender.send_start_album(album=albumName, artist=artistName)
+        
+        self.playAlbum(album=albumName, artist=artistName)
         
         
     def _buttonCallback__pause(self):
